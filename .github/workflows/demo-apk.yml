@@ -1,0 +1,38 @@
+name: Build Standalone Offline Demo APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'demo/**'
+      - '.github/workflows/demo-apk.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate Android project and resolve packages
+        working-directory: demo
+        run: |
+          flutter create --project-name frs_demo --org za.co.firerisk --platforms=android .
+          flutter pub get
+      - name: Build standalone Android APK
+        working-directory: demo
+        run: |
+          flutter build apk --debug
+          cp build/app/outputs/flutter-apk/app-debug.apk ../Fire_Risk_Systems_Offline_Demo.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fire_Risk_Systems_Offline_Demo_APK
+          path: Fire_Risk_Systems_Offline_Demo.apk
+          retention-days: 30
+          if-no-files-found: error

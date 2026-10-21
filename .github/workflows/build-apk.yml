@@ -1,0 +1,52 @@
+name: Build Fire Risk Systems Android APK
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: API URL (can be changed on the app login page)
+        required: false
+        default: http://10.0.2.2:8000
+  push:
+    branches: [main]
+    paths:
+      - 'flutter/**'
+      - '.github/workflows/build-apk.yml'
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm Flutter source is present
+        run: |
+          test -s flutter/lib/main.dart || { echo "::error::Flutter source not yet uploaded. Extract the provided Android Build Kit into this repository root."; exit 1; }
+          test -s flutter/pubspec.yaml || { echo "::error::Missing flutter/pubspec.yaml"; exit 1; }
+          test -s flutter/scripts/configure_android.py || { echo "::error::Missing Android configuration script"; exit 1; }
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate Android project
+        working-directory: flutter
+        run: |
+          flutter create --project-name frs_inspections --org za.co.firerisk --platforms=android .
+          python3 scripts/configure_android.py
+          flutter pub get
+      - name: Build debug APK
+        working-directory: flutter
+        env:
+          API_BASE: ${{ inputs.api_base_url || 'http://10.0.2.2:8000' }}
+        run: |
+          flutter build apk --debug --dart-define="API_BASE_URL=${API_BASE}"
+          test -s build/app/outputs/flutter-apk/app-debug.apk
+          cp build/app/outputs/flutter-apk/app-debug.apk ../Fire_Risk_Systems_Demo.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fire_Risk_Systems_Demo_APK
+          path: Fire_Risk_Systems_Demo.apk
+          if-no-files-found: error
+          retention-days: 14

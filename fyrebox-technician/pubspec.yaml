@@ -1,0 +1,26 @@
+name: fyrebox_technician
+description: Fyrebox technician inspections and service records.
+publish_to: none
+version: 2.0.0+2
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+  qr_flutter: ^4.1.0
+  pdf: ^3.13.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.png
+    - assets/demo.json
+    - assets/Montserrat.ttf
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/Montserrat.ttf

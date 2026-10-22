@@ -42,8 +42,7 @@ android {
     }
     buildTypes {
         release {
-            // Demonstration key. Set FYREBOX_* variables for a client-owned production key.
-            // Preserve this demonstration identity for updates to the previous APK.
+            // Test-signed preview. Set FYREBOX_* variables for a client-owned production key.
             signingConfig = signingConfigs.getByName(if (clientKey != null) "client" else "debug")
         }
     }

@@ -219,12 +219,14 @@ class AppApi {
 
   Future<Uint8List> qrPdf(Json a) async {
     final doc = pw.Document();
+    final font = pw.Font.ttf(await rootBundle.load('assets/Montserrat.ttf'));
     final logo = pw.MemoryImage(
       (await rootBundle.load('assets/logo.png')).buffer.asUint8List(),
     );
     doc.addPage(
       pw.Page(
         pageFormat: const PdfPageFormat(298, 420),
+        theme: pw.ThemeData.withFont(base: font, bold: font),
         build: (_) => pw.Column(
           mainAxisAlignment: pw.MainAxisAlignment.center,
           children: [

@@ -48,6 +48,7 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs dist/Fyrebox_Technician_v2.apk
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 dist/Fyrebox_Technician_v2.apk
           sha256sum dist/Fyrebox_Technician_v2.apk > dist/Fyrebox_Technician_v2.apk.sha256
+          cp build/qa/*.pdf dist/
       - uses: actions/upload-artifact@v4
         with:
           name: Fyrebox_Technician_v2_APK

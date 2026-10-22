@@ -1,0 +1,53 @@
+name: Fyrebox technician APK v2
+on:
+  pull_request:
+    paths:
+      - 'fyrebox-technician/**'
+      - '.github/workflows/fyrebox-technician-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: true
+      FLUTTER_SUPPRESS_ANALYTICS: true
+    defaults:
+      run:
+        working-directory: fyrebox-technician
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - name: Install Android build components
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358'
+      - name: Resolve dependencies
+        run: flutter --suppress-analytics --no-version-check pub get
+      - name: Analyze source
+        run: flutter --suppress-analytics --no-version-check analyze --no-fatal-infos
+      - name: Verify technician workflow
+        run: flutter --suppress-analytics --no-version-check test --reporter expanded
+      - name: Build signed demonstration APK
+        run: |
+          flutter --suppress-analytics --no-version-check build apk --release --no-pub
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/Fyrebox_Technician_v2.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs dist/Fyrebox_Technician_v2.apk
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 dist/Fyrebox_Technician_v2.apk
+          sha256sum dist/Fyrebox_Technician_v2.apk > dist/Fyrebox_Technician_v2.apk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fyrebox_Technician_v2_APK
+          path: fyrebox-technician/dist/
+          if-no-files-found: error
+          retention-days: 14

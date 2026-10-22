@@ -220,32 +220,31 @@ class AppApi {
   Future<Uint8List> qrPdf(Json a) async {
     final doc = pw.Document();
     final font = pw.Font.ttf(await rootBundle.load('assets/Montserrat.ttf'));
-    final logo = pw.MemoryImage(
-      (await rootBundle.load('assets/logo.png')).buffer.asUint8List(),
-    );
-    doc.addPage(
-      pw.Page(
-        pageFormat: const PdfPageFormat(298, 420),
-        theme: pw.ThemeData.withFont(base: font, bold: font),
-        build: (_) => pw.Column(
-          mainAxisAlignment: pw.MainAxisAlignment.center,
-          children: [
-            pw.Image(logo, width: 130, height: 56),
-            pw.SizedBox(height: 20),
-            pw.BarcodeWidget(
-              barcode: pw.Barcode.qrCode(),
-              data: a['qr_token'],
-              width: 185,
-              height: 185,
-            ),
-            pw.SizedBox(height: 15),
-            pw.Text(a['code']),
-            pw.Text(a['name']),
-            pw.Text(a['site_name'] ?? ''),
-          ],
-        ),
-      ),
-    );
+    final logo = pw.MemoryImage((await rootBundle.load('assets/logo.png')).buffer.asUint8List());
+    String shortLabel(dynamic value) {
+      final text = (value ?? '').toString();
+      return text.length > 60 ? '${text.substring(0, 57)}...' : text;
+    }
+    doc.addPage(pw.Page(
+      pageFormat: const PdfPageFormat(298, 420),
+      margin: const pw.EdgeInsets.all(24),
+      theme: pw.ThemeData.withFont(base: font, bold: font),
+      build: (_) => pw.Center(child: pw.SizedBox(width: 250, child: pw.Column(
+        mainAxisSize: pw.MainAxisSize.min,
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Image(logo, width: 115, height: 44),
+          pw.SizedBox(height: 12),
+          pw.Container(color: PdfColors.white, padding: const pw.EdgeInsets.all(20), child: pw.BarcodeWidget(
+            barcode: pw.Barcode.qrCode(), data: a['qr_token'], width: 175, height: 175,
+          )),
+          pw.SizedBox(height: 10),
+          pw.Text(a['code'], style: const pw.TextStyle(fontSize: 11)),
+          pw.Text(shortLabel(a['name']), textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 10)),
+          pw.Text(shortLabel(a['site_name']), textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 10)),
+        ],
+      ))),
+    ));
     return doc.save();
   }
 
@@ -301,11 +300,15 @@ class AppApi {
           ),
           ...photos,
           pw.SizedBox(height: 15),
-          pw.Text('Technician signature'),
-          pw.Image(sig, width: 180, height: 65),
-          pw.Text(s['technicianName']),
-          pw.SizedBox(height: 15),
-          pw.Text(s['brand']['footer'], style: const pw.TextStyle(fontSize: 8)),
+          pw.Container(child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            pw.Text('Technician signature'),
+            pw.SizedBox(height: 8),
+            pw.Image(sig, width: 180, height: 65),
+            pw.SizedBox(height: 6),
+            pw.Text(s['technicianName']),
+            pw.SizedBox(height: 15),
+            pw.Text(s['brand']['footer'], style: const pw.TextStyle(fontSize: 8)),
+          ])),
         ],
       ),
     );

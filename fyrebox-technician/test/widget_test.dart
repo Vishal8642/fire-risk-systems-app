@@ -19,6 +19,7 @@ void main(){
   expect(utf8.decode((await restored.report(r['id'])).take(5).toList()),'%PDF-');expect(utf8.decode((await restored.qrPdf(a)).take(5).toList()),'%PDF-');
  });
  testWidgets('phone layout and required checklist validation at 320 pixels',(tester)async{
+  final previousHandler=FlutterError.onError; FlutterError.onError=(details){debugPrint(details.toString());previousHandler?.call(details);};addTearDown(()=>FlutterError.onError=previousHandler);
   tester.view.physicalSize=const Size(320,760);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);final api=AppApi();await tester.runAsync(api.loadDemo);await api.loginDemo();await tester.pumpWidget(FyreboxApp(api:api));await tester.pumpAndSettle();expect(find.textContaining('Good day,'),findsOneWidget);expect(tester.takeException(),isNull);
   final s=Store(api);await s.refresh();final a=s.assets.first,t=s.checklists.firstWhere((t)=>t['category']==a['category']);final r=await api.call('inspections','POST',{'assetId':a['id'],'templateId':t['id']});await tester.pumpWidget(MaterialApp(home:InspectionPage(s:s,record:obj(r))));await tester.pumpAndSettle();await tester.scrollUntilVisible(find.text('Submit inspection'),500,scrollable:find.byType(Scrollable).first);await tester.tap(find.text('Submit inspection'));await tester.pumpAndSettle();expect(find.textContaining('Answer every required'),findsWidgets);expect(tester.takeException(),isNull);await tester.pumpWidget(const SizedBox());await tester.pump(const Duration(seconds:1));
  });

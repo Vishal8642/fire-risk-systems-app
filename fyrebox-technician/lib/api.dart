@@ -300,6 +300,7 @@ class AppApi {
           ),
           ...photos,
           pw.SizedBox(height: 15),
+          pw.NewPage(freeSpace: 200),
           pw.Container(child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
             pw.Text('Technician signature'),
             pw.SizedBox(height: 8),
